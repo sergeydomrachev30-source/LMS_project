@@ -1,0 +1,76 @@
+[
+{
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$7yqB4shMxUGpVrPb538dPq$i6KkDuYha7MFxh+RC8VQCJUbImNJ0LAJrYtzQoZzSWI=",
+        "last_login": "2026-08-03T08:54:02.791Z",
+        "is_superuser": true,
+        "first_name": "",
+        "last_name": "",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2026-07-28T10:33:33.420Z",
+        "email": "admin@lms.ru",
+        "phone": "+7 (985) 992 18 94",
+        "city": "Москва",
+        "avatar": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.payment",
+    "pk": 1,
+    "fields": {
+        "user": 1,
+        "payment_date": "2026-08-03T10:18:19Z",
+        "paid_course": 1,
+        "paid_lesson": 1,
+        "payment_amount": "3500.00",
+        "payment_method": "transfer"
+    }
+},
+{
+    "model": "lms.course",
+    "pk": 1,
+    "fields": {
+        "title": "Python-разработчик",
+        "preview": "",
+        "description": "Изучаем Django и DRF"
+    }
+},
+{
+    "model": "lms.lesson",
+    "pk": 1,
+    "fields": {
+        "title": "Основы ViewSet",
+        "description": "Разбираемся с автоматической маршрутизацией в Django REST Framework",
+        "preview": "",
+        "video_url": "",
+        "course": 1
+    }
+},
+{
+    "model": "lms.lesson",
+    "pk": 2,
+    "fields": {
+        "title": "Введение в Python",
+        "description": "",
+        "preview": "",
+        "video_url": null,
+        "course": 1
+    }
+},
+{
+    "model": "lms.lesson",
+    "pk": 3,
+    "fields": {
+        "title": "Переменные и типы данных",
+        "description": "",
+        "preview": "",
+        "video_url": null,
+        "course": 1
+    }
+}
+]
