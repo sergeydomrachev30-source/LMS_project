@@ -1,0 +1,56 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "email": "admin@lms.ru",
+      "phone": "+7 (985) 992 18 94",
+      "city": "Москва",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true
+    }
+  },
+  {
+    "model": "lms.course",
+    "pk": 1,
+    "fields": {
+      "title": "Python-разработчик",
+      "preview": "",
+      "description": "Изучаем Django и DRF"
+    }
+  },
+  {
+    "model": "lms.lesson",
+    "pk": 1,
+    "fields": {
+      "title": "Основы ViewSet",
+      "description": "Разбираемся с автоматической маршрутизацией в Django REST Framework",
+      "preview": "",
+      "video_url": "",
+      "course": 1
+    }
+  },
+  {
+    "model": "lms.lesson",
+    "pk": 2,
+    "fields": {
+      "title": "Введение в Python",
+      "description": "",
+      "preview": "",
+      "video_url": null,
+      "course": 1
+    }
+  },
+  {
+    "model": "lms.lesson",
+    "pk": 3,
+    "fields": {
+      "title": "Переменные и типы данных",
+      "description": "",
+      "preview": "",
+      "video_url": null,
+      "course": 1
+    }
+  }
+]
