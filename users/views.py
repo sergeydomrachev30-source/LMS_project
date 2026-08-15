@@ -1,13 +1,16 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import (CreateAPIView, ListAPIView,
-                                     RetrieveUpdateAPIView)
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import Payment, User
-from .serializers import (PaymentSerializer, UserProfileSerializer,
-                          UserPublicProfileSerializer, UserRegisterSerializer)
+from .serializers import (
+    PaymentSerializer,
+    UserProfileSerializer,
+    UserPublicProfileSerializer,
+    UserRegisterSerializer,
+)
 
 
 class UserRegisterCreateAPIView(CreateAPIView):

@@ -1,8 +1,11 @@
 from django.urls import path
 
 from .apps import UsersConfig
-from .views import (PaymentListAPIView, UserProfileUpdateAPIView,
-                    UserRegisterCreateAPIView)
+from .views import (
+    PaymentListAPIView,
+    UserProfileUpdateAPIView,
+    UserRegisterCreateAPIView,
+)
 
 app_name = UsersConfig.name
 
