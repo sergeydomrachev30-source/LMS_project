@@ -3,9 +3,16 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    """Кастомный менеджер для создания пользователей без username"""
+    """
+    Кастомный менеджер для управления пользователями (User).
+    Позволяет создавать обычных и суперпользователей, используя email вместо стандартного username.
+    """
 
     def create_user(self, email, password=None, **extra_fields):
+        """
+        Создает и сохраняет обычного пользователя с указанным email и паролем.
+        Принудительно нормализует email и хэширует пароль перед сохранением в БД.
+        """
         if not email:
             raise ValueError("Email является обязательным полем")
         email = self.normalize_email(email)
@@ -18,6 +25,10 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
+        """
+        Создает и сохраняет суперпользователя (администратора) с указанным email и паролем.
+        Принудительно выставляет флаги административного доступа (is_staff=True, is_superuser=True).
+        """
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -30,6 +41,12 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    """
+    Кастомная модель пользователя учебной платформы.
+    Убирает стандартное поле username. В качестве главного идентификатора (логина) используется email.
+    Хранит контактные данные (телефон, город) и аватар пользователя.
+    """
+
     username = None
     email = models.EmailField(max_length=255, unique=True, verbose_name="Email")
     phone = models.CharField(
@@ -50,10 +67,19 @@ class User(AbstractUser):
         verbose_name_plural = "Пользователи"
 
     def __str__(self):
+        """
+        Возвращает текстовое представление пользователя в виде его email-адреса.
+        """
         return self.email
 
 
 class Payment(models.Model):
+    """
+    Модель для фиксации финансовых операций (платежей) на платформе.
+    Связана с пользователем, совершившим платеж, и конкретной сущностью (курсом или уроком).
+    Хранит дату операции, сумму и выбранный способ оплаты.
+    """
+
     PAYMENT_METHODS = [("cash", "Наличные"), ("transfer", "Перевод на счет")]
     user = models.ForeignKey(
         User,
@@ -83,9 +109,31 @@ class Payment(models.Model):
         max_length=20, choices=PAYMENT_METHODS, verbose_name="Способ оплаты"
     )
 
+    payment_link = models.TextField(
+        blank=True, null=True, verbose_name="Ссылка на оплату"
+    )
+    session_id = models.CharField(
+        max_length=255, blank=True, null=True, verbose_name="ID сессии"
+    )
+
+    PAYMENT_STATUSES = [
+        ("unpaid", "В процессе оплаты"),
+        ("paid", "Оплачено"),
+    ]
+
+    status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUSES,
+        default="unpaid",
+        verbose_name="Статус платежа",
+    )
+
     class Meta:
         verbose_name = "Платеж"
         verbose_name_plural = "Платежи"
 
     def __str__(self):
+        """
+        Возвращает текстовое описание платежа, содержащее email плательщика и способ оплаты.
+        """
         return f"{self.user} - {self.payment_method}"

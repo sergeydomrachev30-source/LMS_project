@@ -1,11 +1,9 @@
 from django.urls import path
 
 from .apps import UsersConfig
-from .views import (
-    PaymentListAPIView,
-    UserProfileUpdateAPIView,
-    UserRegisterCreateAPIView,
-)
+from .views import (PaymentCreateAPIView, PaymentListAPIView,
+                    PaymentStatusRetrieveAPIView, UserProfileUpdateAPIView,
+                    UserRegisterCreateAPIView)
 
 app_name = UsersConfig.name
 
@@ -20,5 +18,15 @@ urlpatterns = [
         "payments/",
         PaymentListAPIView.as_view(),
         name="payment-list",
+    ),
+    path(
+        "payments/create/",
+        PaymentCreateAPIView.as_view(),
+        name="payment-create",
+    ),
+    path(
+        "payments/<int:pk>/status/",
+        PaymentStatusRetrieveAPIView.as_view(),
+        name="payment_status",
     ),
 ]

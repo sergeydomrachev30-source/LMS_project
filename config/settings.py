@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django_filters",
     "lms",
     "users",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -107,4 +108,20 @@ AUTHENTICATION_BACKENDS = [
 SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "Введите токен в формате: Bearer <ваш_токен>",
+        }
+    },
+    "USE_SESSION_AUTH": False,
+    "JSON_EDITOR": True,
 }
