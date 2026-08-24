@@ -3,17 +3,28 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import (CreateAPIView, ListAPIView,
-                                     RetrieveAPIView, RetrieveUpdateAPIView)
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.generics import (
+    CreateAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    RetrieveUpdateAPIView,
+)
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
-from lms.services import (create_stripe_price, create_stripe_product,
-                          create_stripe_session, retrieve_stripe_session)
+from lms.services import (
+    create_stripe_price,
+    create_stripe_product,
+    create_stripe_session,
+    retrieve_stripe_session,
+)
 
 from .models import Payment, User
-from .serializers import (PaymentSerializer, UserProfileSerializer,
-                          UserPublicProfileSerializer, UserRegisterSerializer)
+from .serializers import (
+    PaymentSerializer,
+    UserProfileSerializer,
+    UserPublicProfileSerializer,
+    UserRegisterSerializer,
+)
 
 
 class UserRegisterCreateAPIView(CreateAPIView):

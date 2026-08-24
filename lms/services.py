@@ -34,8 +34,8 @@ def create_stripe_session(price_id):
     Возвращает объект сессии, содержащий ссылку на оплату (url).
     """
     session = stripe.checkout.Session.create(
-        success_url="http://localhost:8000/",
-        cancel_url="http://localhost:8000/",
+        success_url=settings.STRIPE_SUCCESS_URL,  # Заменили хардкод на настройку
+        cancel_url=settings.STRIPE_CANCEL_URL,
         line_items=[{"price": price_id, "quantity": 1}],
         mode="payment",
     )

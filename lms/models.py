@@ -18,6 +18,8 @@ class Course(models.Model):
     )
     description = models.TextField(verbose_name="Описание курса", blank=True, null=True)
 
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

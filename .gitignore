@@ -8,3 +8,6 @@ db.sqlite3
 .idea/
 .DS_Store
 *.log
+
+celerybeat-schedule*
+*.rdb

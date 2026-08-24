@@ -1,9 +1,13 @@
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.generics import (CreateAPIView, DestroyAPIView,
-                                     ListAPIView, RetrieveAPIView,
-                                     UpdateAPIView)
+from rest_framework.generics import (
+    CreateAPIView,
+    DestroyAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    UpdateAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,6 +17,7 @@ from .models import Course, Lesson, Subscription
 from .paginators import CustomPaginator
 from .permissions import IsModerator, IsNotModerator, IsOwner
 from .serializers import CourseSerializer, LessonSerializer
+from .tasks import send_course_update_email
 
 
 class CourseViewSet(ModelViewSet):
@@ -45,6 +50,14 @@ class CourseViewSet(ModelViewSet):
         elif self.action in ["retrieve", "list", "update", "partial_update"]:
             self.permission_classes = [IsModerator | IsOwner]
         return [permission() for permission in self.permission_classes]
+
+    def perform_update(self, serializer):
+        """
+        Перехватывает процесс обновления курса.
+        После успешного сохранения запускает асинхронную задачу отправки уведомлений.
+        """
+        course = serializer.save()
+        send_course_update_email.delay(course.id)
 
 
 class LessonCreateAPIView(CreateAPIView):
