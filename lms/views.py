@@ -1,3 +1,6 @@
+from datetime import timedelta
+from django.utils import timezone
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -54,10 +57,21 @@ class CourseViewSet(ModelViewSet):
     def perform_update(self, serializer):
         """
         Перехватывает процесс обновления курса.
-        После успешного сохранения запускает асинхронную задачу отправки уведомлений.
+        После успешного сохранения запускает асинхронную задачу отправки уведомлений,
+        если с момента последнего обновления прошло более 4 часов.
         """
+        # 1. Получаем старый объект из базы данных ДО сохранения изменений
+        old_course = self.get_object()
+        old_updated_at = old_course.updated_at
+
+        # 2. Сохраняем новые данные курса (здесь field updated_at обновится)
         course = serializer.save()
-        send_course_update_email.delay(course.id)
+
+        # 3. Считаем разницу: Текущее время МИНУС старое время обновления
+        if timezone.now() - old_updated_at > timedelta(hours=4):
+            # 4. Отправляем задачу в Celery после коммита транзакции
+            transaction.on_commit(lambda: send_course_update_email.delay(course.id))
+
 
 
 class LessonCreateAPIView(CreateAPIView):

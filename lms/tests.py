@@ -2,9 +2,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
-
+from rest_framework.test import APITestCase, APITransactionTestCase
+from unittest.mock import patch
 from lms.models import Course, Lesson
+from django.utils import timezone
+from datetime import timedelta
 
 User = get_user_model()
 
@@ -131,3 +133,53 @@ class LessonAndSubscriptionTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("title"), self.course.title)
+
+
+class CourseUpdateCeleryTestCase(APITransactionTestCase):
+    """
+    Класс для тестирования отправки уведомлений через Celery
+    при обновлении курса в зависимости от времени.
+    """
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="celery_test@skypro.ru", password="testpassword"
+        )
+        self.course = Course.objects.create(
+            title="Курс для проверки Celery",
+            description="Исходное описание",
+            owner=self.user
+        )
+        self.url = reverse("lms:courses-detail", kwargs={"pk": self.course.pk})
+
+    @patch('lms.tasks.send_course_update_email.delay')
+    def test_task_triggered_after_4_hours(self, mock_celery_task):
+        """Проверяем: если прошло 5 часов, задача Celery вызывается"""
+
+        past_time = timezone.now() - timedelta(hours=5)
+        Course.objects.filter(pk=self.course.pk).update(updated_at=past_time)
+        self.course.refresh_from_db()
+
+        self.client.force_authenticate(user=self.user)
+
+        data = {"title": "Обновленный курс", "description": "Новое описание"}
+        response = self.client.put(self.url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_celery_task.assert_called_once_with(self.course.id)
+
+    @patch('lms.tasks.send_course_update_email.delay')
+    def test_task_not_triggered_before_4_hours(self, mock_celery_task):
+        """Проверяем: если прошло всего 2 часа, задача Celery не вызывается"""
+
+        past_time = timezone.now() - timedelta(hours=2)
+        Course.objects.filter(pk=self.course.pk).update(updated_at=past_time)
+        self.course.refresh_from_db()
+
+        self.client.force_authenticate(user=self.user)
+
+        data = {"title": "Еще раз обновленный курс", "description": "Другое описание"}
+        response = self.client.put(self.url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_celery_task.assert_not_called()
