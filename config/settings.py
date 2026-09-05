@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -63,7 +64,7 @@ DATABASES = {
         "NAME": "lms_db",
         "USER": "postgres",
         "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": "localhost",
+        "HOST": os.getenv("DB_HOST", "db"),
         "PORT": "5432",
     }
 }
