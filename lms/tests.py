@@ -148,11 +148,11 @@ class CourseUpdateCeleryTestCase(APITransactionTestCase):
         self.course = Course.objects.create(
             title="Курс для проверки Celery",
             description="Исходное описание",
-            owner=self.user
+            owner=self.user,
         )
         self.url = reverse("lms:courses-detail", kwargs={"pk": self.course.pk})
 
-    @patch('lms.tasks.send_course_update_email.delay')
+    @patch("lms.tasks.send_course_update_email.delay")
     def test_task_triggered_after_4_hours(self, mock_celery_task):
         """Проверяем: если прошло 5 часов, задача Celery вызывается"""
 
@@ -168,7 +168,7 @@ class CourseUpdateCeleryTestCase(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         mock_celery_task.assert_called_once_with(self.course.id)
 
-    @patch('lms.tasks.send_course_update_email.delay')
+    @patch("lms.tasks.send_course_update_email.delay")
     def test_task_not_triggered_before_4_hours(self, mock_celery_task):
         """Проверяем: если прошло всего 2 часа, задача Celery не вызывается"""
 

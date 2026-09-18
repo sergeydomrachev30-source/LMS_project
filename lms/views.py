@@ -73,7 +73,6 @@ class CourseViewSet(ModelViewSet):
             transaction.on_commit(lambda: send_course_update_email.delay(course.id))
 
 
-
 class LessonCreateAPIView(CreateAPIView):
     """
     Контроллер для создания нового урока.
