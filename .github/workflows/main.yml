@@ -60,12 +60,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}/web:latest
+          tags: ghcr.io/sergeydomrachev30-source/lms_project/web:latest
 
   # ЭТАП 3: ДЕПЛОЙ
   deploy:
@@ -80,7 +81,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /app/LMS_project || mkdir -p /app/LMS_project && cd /app/LMS_project
+            cd /app/lms_project || mkdir -p /app/lms_project && cd /app/lms_project
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull
             docker compose up -d --remove-orphans
