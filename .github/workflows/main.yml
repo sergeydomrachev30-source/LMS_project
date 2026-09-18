@@ -62,5 +62,5 @@ jobs:
               git clone -b docker-homework https://github.com .
             fi
             
-            sudo docker compose up -d --build --remove-orphans
+            sudo docker compose -f docker-compose.yaml up -d --build --remove-orphans
             sudo docker image prune -f
