@@ -42,16 +42,16 @@ jobs:
         run: |
           python manage.py test
 
-  #ЭТАП 2: ДЕПЛОЙ И СБОРКА НА СЕРВЕРЕ ПО SSH
+  #ЭТАП 2: ДЕПЛОЙ И СБОРКА НА СЕРВЕРЕ ПО SSH ---
   deploy:
     runs-on: ubuntu-latest
-    needs: tests # Запускается только при успешных тестах
+    needs: tests
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Копируем ВСЕ файлы проекта (включая docker-compose.yaml) на сервер в Яндексе
+
       - name: Copy files via SSH (SCP)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -62,7 +62,7 @@ jobs:
           source: "."
           target: "/home/skypro/lms_project"
 
-      # Заходим по SSH и запускаем Docker Compose
+
       - name: Run Docker Compose on Remote Server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -71,14 +71,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            # Переходим в рабочую папку проекта
             cd /home/skypro/lms_project
-            
-            # Подкладываем сохраненный файл секретов .env из домашней директории
             cp ~/.env .env
             
-            # Собираем и запускаем контейнеры с явным указанием файла .yaml
-            sudo docker compose -f docker-compose.yaml up -d --build --remove-orphans
             
-            # Чистим старые кэшированные образы
+            sudo docker compose -f docker-compose.yaml down -v
+            
+            
+            sudo docker compose -f docker-compose.yaml up -d --build --remove-orphans
             sudo docker image prune -f
