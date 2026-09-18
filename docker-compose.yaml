@@ -45,7 +45,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - static_volume:/code/production_static
+      - static_volume:/usr/share/nginx/html/static
     depends_on:
       - web
 
