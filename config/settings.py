@@ -1,19 +1,18 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
-
 from dotenv import load_dotenv
 
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(dotenv_path=os.path.join(BASE_DIR, '.env'))
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
-DEBUG = True
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-fallback-key-for-github-actions")
 
-ALLOWED_HOSTS = []
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -86,14 +85,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "ru-ru"
-
 TIME_ZONE = "Europe/Moscow"
-
 USE_I18N = True
-
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "production_static"
 
 AUTH_USER_MODEL = "users.User"
 
@@ -115,20 +112,6 @@ SIMPLE_JWT = {
 }
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-
-SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "Bearer": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": "Введите токен в формате: Bearer <ваш_токен>",
-        }
-    },
-    "USE_SESSION_AUTH": False,
-    "JSON_EDITOR": True,
-}
-
 STRIPE_SUCCESS_URL = "http://localhost:8000/"
 STRIPE_CANCEL_URL = "http://localhost:8000/"
 
@@ -144,3 +127,29 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": timedelta(days=1),
     },
 }
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "Введите токен в формате: Bearer <ваш_токен>",
+        }
+    },
+    "USE_SESSION_AUTH": False,
+    "JSON_EDITOR": True,
+}
+
+if "test" in sys.argv:
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+
+    if not CELERY_BROKER_URL:
+        CELERY_BROKER_URL = "redis://localhost:6379/0"
+    if not CELERY_RESULT_BACKEND:
+        CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+    if not STRIPE_SECRET_KEY:
+        STRIPE_SECRET_KEY = "mock-stripe-secret-key-for-tests"

@@ -1,70 +1,87 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:16-alpine
-    env_file:
-      - ./.env
     expose:
       - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 3s
-      timeout: 3s
-      retries: 5
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
   redis:
     image: redis:7-alpine
     expose:
       - "6379"
-    volumes:
-      - redis_data:/data
 
   web:
-    build: .
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    image: serikus/skypro_lms:latest
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput --clear && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     volumes:
-      - .:/code
-      - static_volume:/code/static
-    ports:
-      - "8000:8000"
+      - static_volume:/code/production_static
     env_file:
       - ./.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    expose:
+      - "8000"
     depends_on:
-      redis:
-        condition: service_started
-      db:
-        condition: service_healthy
+      - redis
+      - db
+
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/usr/share/nginx/html/static
+    depends_on:
+      - web
 
   celery:
-    build: .
-    command: celery -A config worker --loglevel=info
-    volumes:
-      - .:/code
+    image: serikus/skypro_lms:latest
+    command: celery -A config worker -l info
     env_file:
       - ./.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
-      redis:
-        condition: service_started
-      db:
-        condition: service_healthy
+      - redis
+      - db
 
   celery_beat:
-    build: .
-    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
-    volumes:
-      - .:/code
+    image: serikus/skypro_lms:latest
+    command: celery -A config beat -l info
     env_file:
       - ./.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
-      redis:
-        condition: service_started
-      db:
-        condition: service_healthy
-      web:
-        condition: service_started
+      - redis
+      - db
 
 volumes:
   postgres_data:
-  redis_data:
   static_volume:
