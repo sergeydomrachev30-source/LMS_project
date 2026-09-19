@@ -8,9 +8,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=lms_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
   redis:
     image: redis:7-alpine
@@ -18,17 +18,16 @@ services:
       - "6379"
 
   web:
-    build: .
+    image: serikus/skypro_lms:latest
     command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput --clear && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     volumes:
-      - .:/code
       - static_volume:/code/production_static
     env_file:
       - ./.env
     environment:
-      - POSTGRES_DB=lms_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -50,14 +49,14 @@ services:
       - web
 
   celery:
-    build: .
+    image: serikus/skypro_lms:latest
     command: celery -A config worker -l info
     env_file:
       - ./.env
     environment:
-      - POSTGRES_DB=lms_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -67,14 +66,14 @@ services:
       - db
 
   celery_beat:
-    build: .
+    image: serikus/skypro_lms:latest
     command: celery -A config beat -l info
     env_file:
       - ./.env
     environment:
-      - POSTGRES_DB=lms_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
       - CELERY_BROKER_URL=redis://redis:6379/0

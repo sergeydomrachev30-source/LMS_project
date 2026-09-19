@@ -5,7 +5,7 @@ FROM python:3.12-slim
 RUN apt-get update && apt-get install -y libpq-dev build-essential
 
 # Устанавливаем рабочую директорию в контейнере
-WORKDIR /app
+WORKDIR /code
 
 # Копируем файл с зависимостями и устанавливаем их
 COPY requirements.txt ./

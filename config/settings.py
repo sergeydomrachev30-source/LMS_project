@@ -2,19 +2,17 @@ import os
 import sys
 from datetime import timedelta
 from pathlib import Path
-
 from dotenv import load_dotenv
 
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"))
+
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-fallback-key-for-github-actions")
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -60,7 +58,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Основные настройки базы данных для Docker/Продакшена
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -92,7 +89,7 @@ TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "production_static"
 
 AUTH_USER_MODEL = "users.User"
@@ -114,7 +111,6 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# Основные настройки сторонних сервисов из окружения
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_SUCCESS_URL = "http://localhost:8000/"
 STRIPE_CANCEL_URL = "http://localhost:8000/"
